@@ -19,9 +19,9 @@ setuptools.setup(
     packages=setuptools.find_packages(where="slack_app"),
 
     install_requires=[
-        "aws-cdk.core==1.121.0",
-        "aws_cdk.aws_apigateway==1.121.0",
-        "aws_cdk.aws_lambda==1.121.0"
+        "aws-cdk.core==1.186.0",
+        "aws_cdk.aws_apigateway==1.186.0",
+        "aws_cdk.aws_lambda==1.186.0"
     ],
 
     python_requires=">=3.6",

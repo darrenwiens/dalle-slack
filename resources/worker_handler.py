@@ -1,12 +1,14 @@
 import base64
 import json
 import os
+import openai
 
 import urllib.parse
 import urllib
 from urllib import request, parse
 
 SLACK_BEARER_TOKEN = os.environ["SLACK_BEARER_TOKEN"]
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
 
 def create_modal(body, bearer_token):
@@ -47,7 +49,7 @@ def lambda_handler(event, context):
             "view": {
                 "type": "modal",
                 "callback_id": "shortcut_modal",
-                "title": {"type": "plain_text", "text": "Slash Command Example"},
+                "title": {"type": "plain_text", "text": "Dall-E Generator"},
                 "submit": {"type": "plain_text", "text": "Submit"},
                 "close": {"type": "plain_text", "text": "Cancel"},
                 "blocks": [
@@ -56,7 +58,7 @@ def lambda_handler(event, context):
                         "element": {"type": "plain_text_input", "multiline": True},
                         "label": {
                             "type": "plain_text",
-                            "text": "Text Content",
+                            "text": "Enter prompt for Dall-E (clicking Submit will cost $0.02)",
                             "emoji": True,
                         },
                         "block_id": "content_text",
@@ -74,20 +76,28 @@ def lambda_handler(event, context):
 
         if payload_dict.get("type") == "view_submission":
             """View submission payloads are sent on submit button click"""
+
+            openai.api_key = OPENAI_API_KEY
+
             state = payload_dict["view"]["state"]["values"]
             text_content = state["content_text"][list(state["content_text"].keys())[0]][
                 "value"
             ]
 
+            response = openai.Image.create(prompt=text_content, n=1, size="256x256")
+            image_url = response["data"][0]["url"]
+
             payload = {
                 "blocks": [
                     {
-                        "type": "section",
-                        "text": {
+                        "type": "image",
+                        "title": {
                             "type": "plain_text",
                             "text": text_content,
                             "emoji": True,
                         },
+                        "image_url": image_url,
+                        "alt_text": text_content,
                     }
                 ],
                 "response_type": "ephemeral",
